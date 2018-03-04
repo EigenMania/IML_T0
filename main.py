@@ -22,48 +22,64 @@ data = np.matrix(data)
 #    Exact Least Squares    #
 #############################
 A = data[:,2:] # get third column to end
-b = data[:,1] # get second column
+y = data[:,1] # get second column
+d = np.shape(A)[1] # number of parameters (should be 10)
 
-theta_ls = np.linalg.inv(A.T * A)*A.T*b
-print(theta_ls) # unsurprisingly, all values are 0.1
-print (T) 
+theta_ls = np.linalg.inv(A.T * A)*A.T*y
+print(theta_ls) # unsurprisingly, all values are 0.1 
+print('\n')
 
 #############################
 #      Gradient Descent     #
 #############################
+def gradientDescent(A, y, theta, alpha, eps, max_it):
+    i = 1
+    cur_err = np.linalg.norm(A*theta-y)     # compute error of initial guess
+    n = np.shape(A)[0]                      # number of training samples
+    while (i < max_it and cur_err > eps): # while loop on iterations and error threshold
+        grad = 2*A.T*(A*theta - y) / n      # normalize by num training samples
+        theta = theta - alpha * grad        # update
+        cur_err = np.linalg.norm(A*theta-y) # current error
+        print(cur_err)
 
-def gradientDescent(x, y, theta, alpha, m, max_it):
-    xTrans = x.transpose()
-    for i in range(0, max_it):
-        predicted_y = x.dot(theta)
-        loss = predicted_y-y                  # residual 
-        cost = np.sum(loss ** 2) / (2 * m)    # average cost per example 
-        gradient = np.dot(xTrans, loss) / m   # avg gradient per example
-        theta = theta - alpha * gradient      # update
     return theta
 
-alpha = 0.01
-max_it = 1000
-m, n = np.shape(A)
-theta_gd = np.ones(n)                         # initializing gd parameter
-theta_gd = gradientDescent(A, b, theta_gd, alpha, m, max_it)
-print(theta_gd)                               # print out final parameter
+alpha = 10**-7 # step rate
+max_it = 1000 # max iteration flag
+eps = 10**-5 # final error tolerance
+theta_gd = np.matrix(np.random.rand(d,1)) # initializing gd parameter
+theta_gd = gradientDescent(A, y, theta_gd, alpha, eps, max_it)
+print('\n')
+print(theta_gd) # print out final parameter
 
 #############################
 #   Test Set Performance    #
 #############################
 #
 # 1: Import test set data + parse
+test_set = np.genfromtxt('test.csv', delimiter=',')
+test_set = np.delete(test_set, 0, 0) # remove first row
+test_set = np.matrix(test_set)
+
 # 2: Apply model to test set
+test_A = test_set[:,1:]
+test_y = test_A*theta_ls
+y_act = np.mean(test_A, axis=1) # true output (just the mean)
+
+print("Model Output on Test Set: \n")
+print(test_y)
+print("\n")
+print("Average Across Columns: \n")
+print(y_act)
+print("\n")
+print("Total Error: ", np.linalg.norm(test_y - y_act))
 
 #############################
 #   Write Ouput to File    #
 #############################
-#
-# 1: open file for output (results.csv)
-# 2: write appropriate header line
-# 3: write PROPERLY FORMATTED results to file
-# 4: close file
+output = np.concatenate( (test_set[:,0],y_act), axis=1)
+np.savetxt('results.csv', output, fmt='%d,%.13f', newline='\n', header='Id,y', comments='')  
+
 
 
 
