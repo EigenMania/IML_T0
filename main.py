@@ -26,17 +26,28 @@ b = data[:,1] # get second column
 
 theta_ls = np.linalg.inv(A.T * A)*A.T*b
 print(theta_ls) # unsurprisingly, all values are 0.1
+print (T) 
 
 #############################
 #      Gradient Descent     #
 #############################
-#
-# 1: initialize a random guess for theta
-# 2: set gradient descent constants (alpha, iter_max, eps, etc..)
-# 3: while end conditions not met:
-#    3a: compute gradient
-#    3b: update parameters
-# 4: print out final parameters (theta_gd)
+
+def gradientDescent(x, y, theta, alpha, m, max_it):
+    xTrans = x.transpose()
+    for i in range(0, max_it):
+        predicted_y = x.dot(theta)
+        loss = predicted_y-y                  # residual 
+        cost = np.sum(loss ** 2) / (2 * m)    # average cost per example 
+        gradient = np.dot(xTrans, loss) / m   # avg gradient per example
+        theta = theta - alpha * gradient      # update
+    return theta
+
+alpha = 0.01
+max_it = 1000
+m, n = np.shape(A)
+theta_gd = np.ones(n)                         # initializing gd parameter
+theta_gd = gradientDescent(A, b, theta_gd, alpha, m, max_it)
+print(theta_gd)                               # print out final parameter
 
 #############################
 #   Test Set Performance    #
